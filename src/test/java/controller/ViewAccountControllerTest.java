@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 class ViewAccountControllerTest {
     @Test
     void testMenuAsAdmin () {
-        final String input = "1111" + System.lineSeparator() + 
-                             "1234" + System.lineSeparator();
-        final String output = getOutput(input);
+        final String output = getOutput(
+            "1111", "1234"
+        );
 
         final Pattern pattern = Pattern.compile(
             "^[1-9]+ - View Account Number", 
@@ -26,9 +26,9 @@ class ViewAccountControllerTest {
 
     @Test
     void testMenuAsNonAdmin () {
-        final String input = "1234" + System.lineSeparator() + 
-                             "4321" + System.lineSeparator();
-        final String output = getOutput(input);
+        final String output = getOutput(
+            "1234", "4321"
+        );
 
         final Pattern pattern = Pattern.compile(
             "^[1-9]+ - View Account Number", 
@@ -39,11 +39,9 @@ class ViewAccountControllerTest {
 
     @Test
     void testMenuView () {
-        final String input = "1111" + System.lineSeparator() + 
-                             "1234" + System.lineSeparator() +
-                             "6" + System.lineSeparator() +
-                             "7" + System.lineSeparator();
-        final String output = getOutput(input);
+        final String output = getOutput(
+            "1111", "1234", "6"
+        );
 
         final String expected = new StringBuilder()
             .append("1- Account Number: 1234\n")
@@ -68,15 +66,51 @@ class ViewAccountControllerTest {
             .append(" - Status Account Number: account number active\n\n")
             .toString();
         final Pattern pattern = Pattern.compile(expected);
-
         assertTrue(pattern.matcher(output).find());
     }
 
-    private String getOutput(String input) {
-        final PrintStream outOld = System.out;
+    @Test
+    void testMenuExit () {
+        final String output = getOutput(
+            "1111", "1234", "6", "A"
+        );
+
+        final String expected = new StringBuilder()
+            .append("1- Account Number: 1234\n")
+            .append(" - Role Account: nasabah\n")
+            .append(" - Description Account Number: -\n")
+            .append(" - Status Account Number: account number active\n\n")
+            .append("2- Account Number: 1235\n")
+            .append(" - Role Account: nasabah\n")
+            .append(" - Description Account Number: -\n")
+            .append(" - Status Account Number: account number active\n\n")
+            .append("3- Account Number: 8765\n")
+            .append(" - Role Account: nasabah\n")
+            .append(" - Description Account Number: -\n")
+            .append(" - Status Account Number: account number active\n\n")
+            .append("4- Account Number: 2205\n")
+            .append(" - Role Account: nasabah\n")
+            .append(" - Description Account Number: -\n")
+            .append(" - Status Account Number: account number blocked\n\n")
+            .append("5- Account Number: 1111\n")
+            .append(" - Role Account: admin\n")
+            .append(" - Description Account Number: -\n")
+            .append(" - Status Account Number: account number active\n\n")
+            .append("----------------------------------------:\n\n")
+            .append("Press Any Key\n\n")
+            .append("Main menu admin:\n")
+            .toString();
+        final Pattern pattern = Pattern.compile(expected);
+        assertTrue(pattern.matcher(output).find());
+    }
+
+    private String getOutput(String... inputs) {
+        final PrintStream oldOut = System.out;
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        
-        System.setIn(new ByteArrayInputStream(input.getBytes()));
+
+        System.setIn(new ByteArrayInputStream(
+            (String.join("\n", inputs) + "\n").getBytes())
+        );
         System.setOut(new PrintStream(out));
 
         try {
@@ -86,10 +120,9 @@ class ViewAccountControllerTest {
         catch (Exception e) {
             // NOOP
         } finally {
-            System.out.flush();
-            System.setOut(outOld);
+            System.setOut(oldOut);
         }
 
-        return out.toString();
+        return out.toString().replaceAll("\r\n", "\n");
     }
 }
